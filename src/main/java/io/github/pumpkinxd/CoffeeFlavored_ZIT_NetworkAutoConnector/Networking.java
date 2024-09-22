@@ -85,11 +85,57 @@ public interface Networking {
     }
 
 
-    public static String PostLoginRequest(String id, String encryptedPwc,Pair<String, String> URLAndParams){
+//    public static String PostLoginRequest(String id, String encryptedPwc,Pair<String, String> URLAndParams){
+//        var url = URLAndParams.getLeft() + "/InterFace.do?method=login";
+//        var param_queryString = URLAndParams.getRight();
+//
+//        var full_param=
+//                "userId=" + id+
+//                "&password="+encryptedPwc+"&service="+
+//                "&queryString="+param_queryString+"&operatorPwd=&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=true";
+//
+//
+//
+//
+//
+//        return "";
+//    }
+
+
+
+    public static Pair<Integer, String> PostLoginRequest(String id, String encryptedPwc, Pair<String, String> URLAndParams) {
         var url = URLAndParams.getLeft() + "/InterFace.do?method=login";
-        var params = "queryString=" + URLAndParams.getRight();
-        return "";
+        var param_queryString = URLAndParams.getRight();
+
+        var full_param =
+                "userId=" + id +
+                "&password=" + encryptedPwc + "&service=" +
+                "&queryString=" + param_queryString + "&operatorPwd=&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=true";
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPost post = new HttpPost(url);
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            post.setEntity(new StringEntity(full_param));
+
+            HttpClientResponseHandler<Pair<Integer, String>> responseHandler = response -> {
+                int responseCode = response.getCode();
+                String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+
+                if (responseCode == 200 && responseBody.isEmpty()) {
+                    return Pair.of(responseCode, ""); // Success with empty body
+                } else {
+                    return Pair.of(responseCode, responseBody); // Failure with JSON response
+                }
+            };
+
+            return httpClient.execute(post, responseHandler);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
+
 
 
     @JsonIgnoreProperties(ignoreUnknown = true)

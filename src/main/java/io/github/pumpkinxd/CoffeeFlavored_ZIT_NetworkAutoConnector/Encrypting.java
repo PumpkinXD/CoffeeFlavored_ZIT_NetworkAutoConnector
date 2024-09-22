@@ -38,9 +38,6 @@ public interface Encrypting {
         for (byte b : encryptedBytes) {
             hexString.append(String.format("%02X", b));
         }
-
-
-
         return hexString.toString();
     }
 }

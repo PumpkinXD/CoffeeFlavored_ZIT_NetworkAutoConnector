@@ -1,49 +1,80 @@
 package io.github.pumpkinxd.CoffeeFlavored_ZIT_NetworkAutoConnector;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class Main {
 
+    public static void main(String[] args) throws IOException {
+        Config config = Config.loadFromFile("./ZITNetworkAutoConnector.json");
+        WorkerThread workerThread = new WorkerThread(config);
+        Thread thread = new Thread(workerThread);
+        thread.start();
 
-    static String eportal;
-    static String querying_string;
+        try {
+            Terminal terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .build();
+            LineReader lineReader = LineReaderBuilder.builder()
+                    .terminal(terminal)
+                    .build();
+            String prompt = "> ";
+            while (true) {
+                String line = lineReader.readLine(prompt);
+                if (line.equals("Exit")) {
+                    break;
+                } else if (line.equals("SetIDAndPassword")) {
+                    synchronized (config) {
+                        if (workerThread.isblocked.get()) {
+                            //input ID and password...
+                            var id=lineReader.readLine("Enter ID: ");
+                            var password=lineReader.readLine("Enter Password: ",'*');
+                            config.setUserID(id);
+                            var encrypted = Encrypting.ZIT_Network_Encrypt(Pair.of(config.getPubKeyExponent(), config.getPubKeyModulus()), password);
+                            config.setEncryptedPWD(encrypted);
+                            config.notify();
+                        }
+                    }
 
-    public static void main(String[] args) {
+                } else if (line.equals("ChangePassword")) {
+                    synchronized (config) {
+                        if (workerThread.isblocked.get()) {
+                            var new_pwd = lineReader.readLine("Enter new password: ", '*');
+                            var encrypted = Encrypting.ZIT_Network_Encrypt(Pair.of(config.getPubKeyExponent(), config.getPubKeyModulus()), new_pwd);
+                            config.setEncryptedPWD(encrypted);
+                            config.notify();
+                        } else {
+                            ;
+                        }
 
-        var rsp_fromKDE = Networking.TryConnect2_networkcheck_kde_org();
-        System.out.println(rsp_fromKDE.getLeft() + "\n" + rsp_fromKDE.getRight());
-        ExtractURL_test();
+                    }
 
-
-    }
-
-
-    ///by newbing
-    static public void ExtractURL_test() {
-        {
-            String script = "<script>top.self.location.href='http://10.100.110.12/eportal/index.jsp?wlanuserip=4aa7833e585f06d58152011e65958660&wlanacname=e7e93dc2b56e9ce19a10e4caccd575fe&ssid=&nasip=d7a4fc3b3dafc413f94784d07bd01cf7&mac=6769ec404d3130ddcf99a021e6351d52&t=wireless-v2&url=ddcf351fa234578223b70ac491f90cb8b2b63ae860fa91c5a3c6e0acabff1f12'";
-
-            var result = Networking.extractURLAndParams(script);
-            if (result != null) {
-                System.out.println("Extracted URL: " + result.getKey());
-                System.out.println("Extracted Parameters: " + result.getValue());
-                var keyinfo = Networking.extractRSAPublicKeyExponentAndRSAPublicKeyModulus(result);
-                if (keyinfo != null) {
-                    System.out.println("PublicKeyExponent:" + keyinfo.getLeft());
-                    System.out.println("PublicKeyModulus:" + keyinfo.getRight());
                 }
-
-
-            } else {
-                System.out.println("URL or parameters not found");
             }
+
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
+    }
+}
 
 
+class WorkerThread implements Runnable {
+    public AtomicBoolean isblocked;
+
+    private final Config config;
+
+    public WorkerThread(Config config) {
+        this.config = config;
     }
 
-
-
-
+    @Override
+    public void run() {
+    }
 }
