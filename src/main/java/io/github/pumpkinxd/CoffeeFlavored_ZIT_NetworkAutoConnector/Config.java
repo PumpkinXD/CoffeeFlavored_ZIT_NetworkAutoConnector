@@ -56,7 +56,8 @@ public class Config {
         try {
             return objectMapper.readValue(new File(filePath), Config.class);
         }catch (IOException e){
-            e.printStackTrace();
+//            e.printStackTrace();
+            System.out.println("Config file could not be found");
             Config newConfig = new Config();
             newConfig.setUserID("");
             newConfig.setEncryptedPWD("");

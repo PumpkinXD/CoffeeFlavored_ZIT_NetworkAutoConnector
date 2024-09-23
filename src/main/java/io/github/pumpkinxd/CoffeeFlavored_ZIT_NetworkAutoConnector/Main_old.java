@@ -4,10 +4,12 @@ package io.github.pumpkinxd.CoffeeFlavored_ZIT_NetworkAutoConnector;
 /**
  * testing codes are here.........
  * remove in future......
+ *
  * @author PumpkinXD
  */
 
 
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,26 +25,44 @@ public class Main_old {
 
     public static void main(String[] args) {
 
-//        var rsp_fromKDE = Networking.TryConnect2_networkcheck_kde_org();
+        var rsp_fromKDE = Networking.TryConnect2_networkcheck_kde_org();
+        if (rsp_fromKDE != null) {
+            if (rsp_fromKDE.getRight().contains("<script>top.self.location.href='")) {
+                var linkandquestr = Networking.extractURLAndParams(rsp_fromKDE.getRight());
+                var keyinfo = Networking.extractRSAPublicKeyExponentAndRSAPublicKeyModulus(linkandquestr);
+                var userid = " id";
+                var pwd = " pwd";
+                String encryped = "";
+                try {
+                    encryped = Encrypting.ZIT_Network_Encrypt3(keyinfo, pwd);
+                } catch (Throwable ignored) {
+                    ;
+                }
+                var res = Networking.PostLoginRequest(userid, encryped, linkandquestr);
+                System.out.println(res.getLeft() + "\n" + res.getRight());
+            } else {
+                var keyinfo = Pair.of("10001", "94dd2a8675fb779e6b9f7103698634cd400f27a154afa67af6166a43fc26417222a79506d34cacc7641946abda1785b7acf9910ad6a0978c91ec84d40b71d2891379af19ffb333e7517e390bd26ac312fe940c340466b4a5d4af1d65c3b5944078f96a1a51a5a53e4bc302818b7c9f63c4a1b07bd7d874cef1c3d4b2f5eb7871");
+                try {
+                    var en = Encrypting.ZIT_Network_Encrypt3(keyinfo, "pwd");
+                    System.out.println(en);
+
+                } catch (Throwable ignore) {
+
+                }
+            }
+        }
 //        System.out.println(rsp_fromKDE.getLeft() + "\n" + rsp_fromKDE.getRight());
 //        ExtractURL_test();
 
 
+//        Thread workerThread = new Thread(new Worker());
+//        while (true){
+        //read command from cli...
+        //stop: stop the worker thread
+        //chang_password: change new password then encrypt when WorkerRunning==false/WorkerPausing==true (and RSA info is not null)
+//            String cmd;
 
-
-
-        Thread workerThread = new Thread(new Worker());
-        while (true){
-            //read command from cli...
-            //stop: stop the worker thread
-            //chang_password: change new password then encrypt when WorkerRunning==false/WorkerPausing==true (and RSA info is not null)
-            String cmd;
-
-        }
-
-
-
-
+//        }
 
 
     }
@@ -73,65 +93,4 @@ public class Main_old {
     }
 
 
-}
-
-class Worker implements Runnable {
-    public void run() {
-
-        while (Main_old.WorkerRunning.get()) {
-            var respondAndInfo = Networking.TryConnect2_networkcheck_kde_org();
-            assert respondAndInfo != null;
-            if (respondAndInfo.getLeft().equals(200)&&respondAndInfo.getRight().startsWith("<script>top.self.location.href='"))
-            {
-                var URLAndQueryString=Networking.extractURLAndParams(respondAndInfo.getRight());
-
-                assert URLAndQueryString != null;
-                var RSAPublicKeyExponentAndRSAPublicKeyModulus=Networking.extractRSAPublicKeyExponentAndRSAPublicKeyModulus(URLAndQueryString);
-
-                var config=ConfigManager.getConfig();
-                var rwlock=ConfigManager.getLock();
-                //if config.PubKeyModulus != null and PubKeyExponent != null
-                //check RSAPublicKeyExponentAndRSAPublicKeyModulus==config
-                //if config == null, request the user input password
-
-
-                synchronized (config){
-                    while (!(RSAPublicKeyExponentAndRSAPublicKeyModulus.getLeft().equals(config.getPubKeyExponent())||!(RSAPublicKeyExponentAndRSAPublicKeyModulus.getRight().equals(config.getPubKeyModulus())))){
-                        //out:empty ID/PWD or PWD expired
-                        Main_old.WorkerPausing.set(true);
-                        try {
-                            config.wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        Main_old.WorkerPausing.set(false);
-                    }
-                }
-
-
-
-
-
-                try {
-                    Thread.sleep(30000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-            } else if (respondAndInfo.getLeft().equals(200)&&respondAndInfo.getRight().equals("OK")) {
-                try {
-                    Thread.sleep(30000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }else {
-                try {
-                    Thread.sleep(30000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            //TODO:
-        }
-    }
 }
