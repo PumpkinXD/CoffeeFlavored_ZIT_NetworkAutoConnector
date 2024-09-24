@@ -40,7 +40,7 @@ public class Main {
                             var id=lineReader.readLine("Enter ID: ");
                             var password=lineReader.readLine("Enter Password: ",'*');
                             config.setUserID(id);
-                            var encrypted = Encrypting.ZIT_Network_Encrypt(Pair.of(config.getPubKeyExponent(), config.getPubKeyModulus()), password);
+                            var encrypted = Encrypting.ZIT_Network_Encrypt(Pair.of(config.getPubKeyExponent(), config.getPubKeyModulus()), password,config.getMac());
                             config.setEncryptedPWD(encrypted);
                             config.notify();
                         }
@@ -50,7 +50,7 @@ public class Main {
                     synchronized (config) {
                         if (workerThread.isblocked.get()) {
                             var new_pwd = lineReader.readLine("Enter new password: ", '*');
-                            var encrypted = Encrypting.ZIT_Network_Encrypt(Pair.of(config.getPubKeyExponent(), config.getPubKeyModulus()), new_pwd);
+                            var encrypted = Encrypting.ZIT_Network_Encrypt(Pair.of(config.getPubKeyExponent(), config.getPubKeyModulus()), new_pwd,config.getMac());
                             config.setEncryptedPWD(encrypted);
                             config.notify();
                         } else {

@@ -12,9 +12,6 @@ import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public interface Networking {
 
     public static Pair<Integer, String> TryConnect2_networkcheck_kde_org() {
@@ -36,25 +33,6 @@ public interface Networking {
 
         return null;
     }
-
-
-    public static Pair<String, String> extractURLAndParams(String script) {
-        String urlRegex = "http://[^/]+/eportal";
-        String paramsRegex = "\\?(.*)'";
-
-        Pattern urlPattern = Pattern.compile(urlRegex);
-        Matcher urlMatcher = urlPattern.matcher(script);
-
-        Pattern paramsPattern = Pattern.compile(paramsRegex);
-        Matcher paramsMatcher = paramsPattern.matcher(script);
-
-        if (urlMatcher.find() && paramsMatcher.find()) {
-            return Pair.of(urlMatcher.group(), paramsMatcher.group(1));
-        } else {
-            return null;
-        }
-    }
-
 
     public static Pair<String, String> extractRSAPublicKeyExponentAndRSAPublicKeyModulus(Pair<String, String> URLAndParams) {
         var url = URLAndParams.getLeft() + "/InterFace.do?method=pageInfo";
@@ -84,33 +62,14 @@ public interface Networking {
         return null;
     }
 
-
-//    public static String PostLoginRequest(String id, String encryptedPwc,Pair<String, String> URLAndParams){
-//        var url = URLAndParams.getLeft() + "/InterFace.do?method=login";
-//        var param_queryString = URLAndParams.getRight();
-//
-//        var full_param=
-//                "userId=" + id+
-//                "&password="+encryptedPwc+"&service="+
-//                "&queryString="+param_queryString+"&operatorPwd=&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=true";
-//
-//
-//
-//
-//
-//        return "";
-//    }
-
-
-
     public static Pair<Integer, String> PostLoginRequest(String id, String encryptedPwc, Pair<String, String> URLAndParams) {
         var url = URLAndParams.getLeft() + "/InterFace.do?method=login";
         var param_queryString = URLAndParams.getRight();
 
         var full_param =
                 "userId=" + id +
-                "&password=" + encryptedPwc + "&service=" +
-                "&queryString=" + param_queryString + "&operatorPwd=&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=true";
+                        "&password=" + encryptedPwc + "&service=" +
+                        "&queryString=" + param_queryString + "&operatorPwd=&operatorPwd=&operatorUserId=&validcode=&passwordEncrypt=true";
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(url);
@@ -135,7 +94,6 @@ public interface Networking {
 
         return null;
     }
-
 
 
     @JsonIgnoreProperties(ignoreUnknown = true)

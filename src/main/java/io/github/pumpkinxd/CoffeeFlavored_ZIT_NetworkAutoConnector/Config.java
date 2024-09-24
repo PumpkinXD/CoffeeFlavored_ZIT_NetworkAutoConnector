@@ -13,6 +13,25 @@ public class Config {
     private String encryptedPWD;
     private String PubKeyModulus;
     private String PubKeyExponent;
+    private String mac;
+
+    public static Config loadFromFile(String filePath) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.readValue(new File(filePath), Config.class);
+        } catch (IOException e) {
+//            e.printStackTrace();
+            System.out.println("Config file could not be found");
+            Config newConfig = new Config();
+            newConfig.setUserID("");
+            newConfig.setEncryptedPWD("");
+            newConfig.setPubKeyModulus("");
+            newConfig.setPubKeyExponent("");
+            newConfig.setMac("");
+            return newConfig;
+        }
+
+    }
 
     public String getUserID() {
         return userID;
@@ -46,26 +65,16 @@ public class Config {
         PubKeyExponent = pubKeyExponent;
     }
 
-
     public void saveToFile(String filePath) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(new File(filePath), this);
     }
-    public static Config loadFromFile(String filePath)  {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.readValue(new File(filePath), Config.class);
-        }catch (IOException e){
-//            e.printStackTrace();
-            System.out.println("Config file could not be found");
-            Config newConfig = new Config();
-            newConfig.setUserID("");
-            newConfig.setEncryptedPWD("");
-            newConfig.setPubKeyModulus("");
-            newConfig.setPubKeyExponent("");
-            return newConfig;
-        }
 
+    public String getMac() {
+        return mac;
     }
 
+    public void setMac(String mac) {
+        this.mac = mac;
+    }
 }
