@@ -97,7 +97,7 @@ public interface Networking {
 
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class KeyInfo {
+    class KeyInfo {
         private String publicKeyModulus;
         private String publicKeyExponent;
 

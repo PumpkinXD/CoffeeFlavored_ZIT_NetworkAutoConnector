@@ -1,5 +1,6 @@
 package io.github.pumpkinxd.CoffeeFlavored_ZIT_NetworkAutoConnector;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -79,10 +80,56 @@ class WorkerThread implements Runnable {
         this.config = config;
     }
 
+    @SuppressWarnings("BusyWait")
     @Override
     public void run() {
-        while (keeplooping.get()) {}
-        System.out.println("Worker thread stopped");
+        while (keeplooping.get()) {
+            var rsp_fromKDE = Networking.TryConnect2_networkcheck_kde_org();
+            if (rsp_fromKDE != null) {
+                if (rsp_fromKDE.getRight().contains("<script>top.self.location.href='")) {
+                    var uRLAndQueryString = StringParser.extractURLAndQueryString(rsp_fromKDE.getRight());
+                    var keyinfo = Networking.extractRSAPublicKeyExponentAndRSAPublicKeyModulus(uRLAndQueryString);
+                    var mac = StringParser.getMacFromQueryString(uRLAndQueryString.getRight());
+                    if(config.getMac().isEmpty()) {config.setMac(mac);}
+                    while (!keyinfo.getLeft().equals(config.getPubKeyExponent()) || !keyinfo.getRight().equals(config.getPubKeyModulus()) || config.getUserID().isEmpty() || config.getEncryptedPWD().isEmpty()) {
+                        System.out.println("Password expired, please re-enter password or change account");
+                        isblocked.set(true);
+                        try {
+                            config.wait();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    while (true){
+                        var respond = Networking.PostLoginRequest(config.getUserID(), config.getEncryptedPWD(), uRLAndQueryString);
+                        //if (respond.getRight()) {} //respond is json, if not success ask user to change password...
+                        if (respond != null && respond.getLeft().equals(200)) {
+                            var loginInfo=StringParser.parseLoginRespondString(respond.getRight());
+                            if (!loginInfo.getMiddle().contains("success")){
+                                System.out.println("Login failed, please re-enter password or change account");
+                                isblocked.set(true);
+                                try {
+                                    config.wait();
+                                } catch (InterruptedException ignored) {}
+                                continue;
+                            }else break;
+                        }
+                    }
 
+
+                }
+
+            }
+
+            try {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        System.out.println("Worker thread stopped");
     }
 }
+
+

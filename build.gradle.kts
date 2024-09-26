@@ -15,6 +15,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("commons-codec:commons-codec:1.17.1")
     implementation("org.apache.commons:commons-crypto:1.1.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.17.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("org.jline:jline:3.26.3")
 

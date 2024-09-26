@@ -16,7 +16,7 @@ public interface Encrypting {
 
     public static String ZIT_Network_Encrypt(Pair<String, String> publicKeyInfo, String pwd, String mac) throws Exception {
         var salted = pwd + ">" + mac;
-//        var salter = pwd + ">" + "random_salt";//still working
+//        var salter = pwd + ">" + "random_salt";//still working, zit's server will ignore anything behind '>'
         return encryptedPassword(publicKeyInfo.getLeft(), publicKeyInfo.getRight(), pwd);
     }
 
@@ -42,15 +42,13 @@ public interface Encrypting {
 
 
         int chunkSize = 2 * (modulusBigInt.bitLength() / 16 - 1);
-        System.out.println(chunkSize);
 
 
         int paddingLength = chunkSize - (bytes.length % chunkSize);
         byte[] paddedBytes = new byte[bytes.length + paddingLength];
 
         System.arraycopy(bytes, 0, paddedBytes, 0, bytes.length);
-
-        ArrayUtils.reverse(paddedBytes);
+        ArrayUtils.reverse(paddedBytes);//just blame ruijie and security.js
 
 
         Cipher cipher = Cipher.getInstance("RSA/ECB/NoPadding");
